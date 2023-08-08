@@ -1,16 +1,19 @@
 from os import kill
 import signal
-from django.shortcuts import render
 from django.http import HttpResponse
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import subprocess
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status
 import json
 from django.conf import settings
 from pathlib import Path
+import os
+import shutil
+import zipfile
+from django.http import HttpResponse
+from django.conf import settings
 
 def index(request):
     return HttpResponse("Hello, world. You're at the polls index.")
@@ -230,8 +233,83 @@ class getNode(APIView):
                 return JsonResponse({"node": d})
         return JsonResponse({"node": False})
     
-       
+class getData(APIView):
+    def get(self, request):
+        
+        cur_path = settings.BASE_DIR
+        ruta_carpeta = str(Path(cur_path, '../', 'allora_code/'))
+        # Especifica la ruta de la carpeta que quieres explorar
 
+        # Obtiene la lista de directorios dentro de la carpeta
+        directorios = next(os.walk(ruta_carpeta))[1]
+        mac_address = []
+        # Imprime los nombres de los directorios
+        for directorio in directorios:
+            mac_address.append(directorio)
+            print(directorio)
+        data = {
+            "mac_address": mac_address
+        }
+        return JsonResponse(data)
+
+class downloadData(APIView):
+    def get(self, request):
+
+        # Nombre del archivo ZIP
+        nombre_zip = 'carpeta_descargada.zip'
+        cur_path = settings.BASE_DIR
+        ruta_carpeta = str(Path(cur_path, '../', 'allora_code/9a76ba3f'))
+
+        ruta_zip = os.path.join(settings.MEDIA_ROOT, nombre_zip)
+
+        # Comprimir la carpeta en el archivo ZIP
+        shutil.make_archive(ruta_zip[:-4], 'zip', ruta_carpeta)
+
+        # Devolver la URL del archivo ZIP relativa al frontend
+        url_zip = os.path.join(settings.MEDIA_URL, nombre_zip)
+        return JsonResponse({'url_zip': url_zip})
+    
+class downloadDataNode(APIView):
+    def get(self, request):
+        node = request.POST.get('node')
+        cur_path = settings.BASE_DIR
+        ruta_json = str(Path(cur_path, '../', 'allora_code/'))
+        ruta_json = ruta_json+'/'+(str(node))
+        ruta_json = ruta_json+'/data.json'
+        print(ruta_json)
+        file = open(ruta_json)
+        data = json.load(file)
+
+        return JsonResponse(data)
+
+class downloadAll(APIView):
+    def get(self, request):
+        print("holi")
+        cur_path = settings.BASE_DIR
+        ruta_carpeta = str(Path(cur_path, '../', 'allora_code/'))
+        # Especifica la ruta de la carpeta que quieres explorar
+
+        # Obtiene la lista de directorios dentro de la carpeta
+        directorios = next(os.walk(ruta_carpeta))[1]
+        data_all = []
+        mac_address = []
+        # Imprime los nombres de los directorios
+        for directorio in directorios:
+            mac_address.append(directorio)
+            cur_path = settings.BASE_DIR
+            ruta_json = str(Path(cur_path, '../', 'allora_code/'))
+            ruta_json = ruta_json+'/'+(str(directorio))
+            ruta_json = ruta_json+'/data.json'
+            print(ruta_json)
+            file = open(ruta_json)
+            data = json.load(file)
+            data_all.append(data)
+        context = {
+            "mac_address": mac_address,
+            "data": data_all,
+            
+        }
+        return JsonResponse(context)
 
 class api(APIView):
     def get(self, request):
@@ -241,7 +319,6 @@ class api(APIView):
 
     def post(self, request):
         # Lógica de la función POST
-        iniciar_programa()
         return Response("¡Hola desde la función POST!")
 
     def put(self, request, pk=None):

@@ -17,4 +17,8 @@ urlpatterns = [
     path("addNode/", views.addNode.as_view(), name="addNode"),
     path("getNode/", views.getNode.as_view(), name="getNode"),
     path("restartGateway/", views.restartGateway.as_view(), name="restartGateway"),
+    path("getData/", views.getData.as_view(), name="getData"),
+    path("downloadData/", views.downloadData.as_view(), name="downloadData"),
+    path("downloadDataNode/", views.downloadDataNode.as_view(), name="downloadDataNode"),
+    path("downloadAll/", views.downloadAll.as_view(), name="downloadAll"),
 ]
