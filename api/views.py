@@ -71,7 +71,6 @@ class getGateway(APIView):
     def get(self, request):
         cur_path = settings.BASE_DIR
         path = str(Path(cur_path, '../'))
-        print(path)
         filepath = str(Path(cur_path, '../', 'allora_code/LoRa.json'))
         f = open(filepath)
         data = json.load(f)
@@ -178,10 +177,11 @@ class updateNode(APIView):
         data = json.load(f)
 
         for d in data:
-            if d['name'] == nodo['name']:
-                d['mac_address'] = nodo['mac_address']
-                d['sleep_mesh'] = nodo['sleep_mesh']
-                d['active'] = nodo['active']
+            if d['name'] == nodo['name'][0]:
+                d['mac_address'] = nodo['mac_address'][0]
+                d['sleep_mesh'] = nodo['sleep_mesh'][0]
+                d['active'] = nodo['active'][0]
+                d['listening_time'] = nodo['listening_time'][0]
                 break
     
         with open(filepath, 'w') as file:
@@ -195,7 +195,6 @@ class updateNode(APIView):
 class addNode(APIView):
     def post(self, request):
         nodo = dict(request.data)
-
         cur_path = settings.BASE_DIR
         filepath = str(Path(cur_path, '../', 'allora_code/Nodes.json'))
         f = open(filepath)
@@ -203,6 +202,7 @@ class addNode(APIView):
 
         nodo['name'] = nodo['name'][0]
         nodo['mac_address'] = nodo['mac_address'][0]
+        nodo['listening_time'] = nodo['listening_time'][0]
         if nodo['active'][0] == 'true':
             nodo['active'] = True
         elif nodo['active'][0] == 'false':
@@ -227,9 +227,9 @@ class getNode(APIView):
         filepath = str(Path(cur_path, '../', 'allora_code/Nodes.json'))
         f = open(filepath)
         data = json.load(f)
-        name = request.POST.get('name')
+        mac_address = request.POST.get('mac_address')
         for d in data:
-            if d['name'] == name:
+            if d['mac_address'] == mac_address:
                 return JsonResponse({"node": d})
         return JsonResponse({"node": False})
     
@@ -246,7 +246,6 @@ class getData(APIView):
         # Imprime los nombres de los directorios
         for directorio in directorios:
             mac_address.append(directorio)
-            print(directorio)
         data = {
             "mac_address": mac_address
         }
@@ -276,7 +275,6 @@ class downloadDataNode(APIView):
         ruta_json = str(Path(cur_path, '../', 'allora_code/'))
         ruta_json = ruta_json+'/'+(str(node))
         ruta_json = ruta_json+'/data.json'
-        print(ruta_json)
         file = open(ruta_json)
         data = json.load(file)
 
@@ -284,7 +282,6 @@ class downloadDataNode(APIView):
 
 class downloadAll(APIView):
     def get(self, request):
-        print("holi")
         cur_path = settings.BASE_DIR
         ruta_carpeta = str(Path(cur_path, '../', 'allora_code/'))
         # Especifica la ruta de la carpeta que quieres explorar
@@ -300,7 +297,6 @@ class downloadAll(APIView):
             ruta_json = str(Path(cur_path, '../', 'allora_code/'))
             ruta_json = ruta_json+'/'+(str(directorio))
             ruta_json = ruta_json+'/data.json'
-            print(ruta_json)
             file = open(ruta_json)
             data = json.load(file)
             data_all.append(data)
