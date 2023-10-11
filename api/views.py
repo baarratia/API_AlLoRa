@@ -11,7 +11,6 @@ from django.conf import settings
 from pathlib import Path
 import os
 import shutil
-import zipfile
 from django.http import HttpResponse
 from django.conf import settings
 
@@ -25,7 +24,7 @@ class restartGateway(APIView):
             data = json.load(file)
         kill(data["pid"], signal.SIGKILL)
         data["pid"] = 0
-        new_program = subprocess.Popen(['python', '../main.py'])
+        new_program = subprocess.Popen(['python', '../allora_code/main.py'])
         data["pid"] = new_program.pid
         data["state"] = True
         with open("process.json", "w") as file:
@@ -37,7 +36,7 @@ class restartGateway(APIView):
 class activateGateway(APIView):
     def get(self, request):
 
-        program = subprocess.Popen(['python', '../main.py'])
+        program = subprocess.Popen(['python', '../allora_code/main.py'])
         with open("process.json") as file:
             data = json.load(file)
             data["pid"] = program.pid
