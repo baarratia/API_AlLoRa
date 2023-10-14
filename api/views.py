@@ -13,6 +13,8 @@ import os
 import shutil
 from django.http import HttpResponse
 from django.conf import settings
+import requests
+from datetime import datetime
 
 def index(request):
     return HttpResponse("Hello, world. You're at the polls index.")
@@ -302,24 +304,99 @@ class downloadAll(APIView):
         context = {
             "mac_address": mac_address,
             "data": data_all,
-            
         }
         return JsonResponse(context)
-
-class api(APIView):
-    def get(self, request):
-        # Lógica de la función GET
-        #reiniciar_programa()
-        return JsonResponse({'message': 'Configuraciones modificadas y programa reiniciado.'})
-
+    
+class writeInfluxdb(APIView):
     def post(self, request):
-        # Lógica de la función POST
-        return Response("¡Hola desde la función POST!")
+        
+        text = ""
+        cur_path = settings.BASE_DIR
+        ruta_carpeta = str(Path(cur_path, '../', 'allora_code/'))
 
-    def put(self, request, pk=None):
-        # Lógica de la función PUT
-        return Response("¡Hola desde la función PUT!")
+        # Obtiene la lista de directorios dentro de la carpeta
+        directorios = next(os.walk(ruta_carpeta))[1]
+        mac_address = []
+        # Imprime los nombres de los directorios
+        dict = {}
+        for directorio in directorios:
+            mac_address.append(directorio)
 
-    def delete(self, request, pk=None):
-        # Lógica de la función DELETE
-        return Response("¡Hola desde la función DELETE!")
+        for mac in mac_address:
+            cur_path = settings.BASE_DIR
+            ruta_json = str(Path(cur_path, '../', 'allora_code/'))
+            ruta_json = ruta_json+'/'+(str(mac))
+            archivos = next(os.walk(ruta_json))[2]
+            dict[mac] = archivos
+        
+        #temperature,location=kitchen value=32.1
+        #temperature,location=living value=10
+        
+        for mac in dict:
+            
+            if dict[mac] != []:
+                
+                for archivo in dict[mac]:
+                    text = text + "sentiments,"
+                    text = text + "mac_address=" + mac + " "
+                    cur_path = settings.BASE_DIR
+                    ruta_json = str(Path(cur_path, '../', 'allora_code/'))
+                    ruta_json = ruta_json+'/'+(str(mac))
+                    ruta_json = ruta_json+'/'+(str(archivo))
+                    file = open(ruta_json)
+                    data = json.load(file)
+                    
+                    for d in data:
+                        if d == "timestamp":
+                            pass
+                        else:
+                            text = text + d
+                            text = text + "="
+                            text = text + str(data[d])
+                            text = text + ","
+                    text = text[:-1]
+                    
+                    text = text + "\n"
+        text = text.split('\n')
+
+        #Auth:
+        
+        INFLUXDB_TOKEN = os.environ.get('INFLUXDB_TOKEN', '0')
+        headers = {
+            "Authorization": f"Token {INFLUXDB_TOKEN}",
+        }
+        response = requests.get("https://eu-central-1-1.aws.cloud2.influxdata.com/api/v2/", headers=headers)
+    
+        if response.status_code == 200:
+            #Write:
+            INFLUXDB_TOKEN = os.environ.get('INFLUXDB_TOKEN', '0')
+            bucket_id = "ed4cdad145964fb2"
+            org_id = "57e1f0c70382c0a2"
+            headers = {
+                "Authorization": f"Token {INFLUXDB_TOKEN}",
+                "Content-Type": "text/plain"
+            }
+            for linea in text:
+                response = requests.post(f"https://eu-central-1-1.aws.cloud2.influxdata.com/api/v2/write?bucket={bucket_id}&org={org_id}&precision=s", headers=headers, data=linea)
+          
+            return JsonResponse({'message': 'Datos escritos en InfluxDB.'})
+        else:
+            return JsonResponse({'message': 'No fue autorizado.'})
+        
+    
+class getDataInfluxDB(APIView):
+    def get(self, request):
+        INFLUXDB_TOKEN = os.environ.get('INFLUXDB_TOKEN', '0')
+        bucket_id = "ed4cdad145964fb2"
+        org_id = "57e1f0c70382c0a2"
+        headers = {
+            "Authorization": f"Token {INFLUXDB_TOKEN}",
+            "Content-Type": "applicacion/json"
+        }
+
+        data = {
+            "query": "from(bucket: \"allora\")\n  |> range(start: -1d)\n  |> filter(fn: (r) => r[\"_measurement\"] == sentiments)"
+        }
+        response = requests.post(f"https://eu-central-1-1.aws.cloud2.influxdata.com/api/v2/query/analyze?orgID={org_id}", headers=headers, data=data)
+        print(response.json())
+        return JsonResponse({'message': 'Datos recibidos de InfluxDB.'})

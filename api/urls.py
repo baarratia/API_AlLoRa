@@ -4,7 +4,6 @@ from . import views
 
 urlpatterns = [
     path("", views.index, name="index"),
-    path("api/", views.api.as_view(), name="api"),
     path("gateway/", views.getGateway.as_view(), name="gateway"),
     path("nodes/", views.getNodes.as_view(), name="nodes"),
     path("activateg/", views.activateGateway.as_view(), name="activateg"),
@@ -21,4 +20,6 @@ urlpatterns = [
     path("downloadData/", views.downloadData.as_view(), name="downloadData"),
     path("downloadDataNode/", views.downloadDataNode.as_view(), name="downloadDataNode"),
     path("downloadAll/", views.downloadAll.as_view(), name="downloadAll"),
+    path("writeInfluxdb/", views.writeInfluxdb.as_view(), name="writeInfluxdb"),
+    path("getDataInfluxDB/", views.getDataInfluxDB.as_view(), name="getDataInfluxDB")
 ]
