@@ -38,7 +38,15 @@ class restartGateway(APIView):
 class activateGateway(APIView):
     def get(self, request):
 
-        program = subprocess.Popen(['python', '../allora_code/main.py'])
+        #program = subprocess.Popen(['python', '../allora_code/main.py'])
+        working_directory = '../allora_code/'
+
+        # Comando que deseas ejecutar en segundo plano
+        command = 'python main.py'  # Reemplaza 'script.py' con el nombre de tu script
+
+        # Ejecuta el comando en segundo plano en el directorio especificado
+        program = subprocess.Popen(command, shell=True, cwd=working_directory)
+
         with open("process.json") as file:
             data = json.load(file)
             data["pid"] = program.pid
