@@ -34,7 +34,7 @@ class restartGateway(APIView):
         
         working_directory = '../allora_code/'
 
-        command = 'python main.py'  
+        command = 'python3 main.py'  
 
         new_program = subprocess.Popen(command, shell=True, cwd=working_directory)
         data["pid"] = new_program.pid
@@ -50,7 +50,7 @@ class activateGateway(APIView):
 
         working_directory = '../allora_code/'
 
-        command = 'python main.py'  
+        command = 'python3 main.py'  
 
         program = subprocess.Popen(command, shell=True, cwd=working_directory)
 
