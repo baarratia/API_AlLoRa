@@ -24,9 +24,19 @@ class restartGateway(APIView):
 
         with open("process.json") as file:
             data = json.load(file)
-        kill(data["pid"], signal.SIGKILL)
-        data["pid"] = 0
-        new_program = subprocess.Popen(['python', '../allora_code/main.py'])
+        try:
+            kill(data["pid"], signal.SIGKILL)
+            data["pid"] = 0
+        except ProcessLookupError as ex:
+            print(f"Error al matar el proceso: {ex}")
+        except Exception as ex:
+            print(f"Otro error inesperado: {ex}")
+        
+        working_directory = '../allora_code/'
+
+        command = 'python main.py'  
+
+        new_program = subprocess.Popen(command, shell=True, cwd=working_directory)
         data["pid"] = new_program.pid
         data["state"] = True
         with open("process.json", "w") as file:
@@ -38,13 +48,10 @@ class restartGateway(APIView):
 class activateGateway(APIView):
     def get(self, request):
 
-        #program = subprocess.Popen(['python', '../allora_code/main.py'])
         working_directory = '../allora_code/'
 
-        # Comando que deseas ejecutar en segundo plano
-        command = 'python main.py'  # Reemplaza 'script.py' con el nombre de tu script
+        command = 'python main.py'  
 
-        # Ejecuta el comando en segundo plano en el directorio especificado
         program = subprocess.Popen(command, shell=True, cwd=working_directory)
 
         with open("process.json") as file:
@@ -61,7 +68,13 @@ class deactivateGateway(APIView):
 
         with open("process.json") as file:
             data = json.load(file)
-        kill(data["pid"], signal.SIGKILL)
+        try:
+            kill(data["pid"], signal.SIGKILL)
+            data["pid"] = 0
+        except ProcessLookupError as ex:
+            print(f"Error al matar el proceso: {ex}")
+        except Exception as ex:
+            print(f"Otro error inesperado: {ex}")
         data["pid"] = 0
         data["state"] = False
         with open("process.json", "w") as file:
@@ -304,11 +317,15 @@ class downloadAll(APIView):
             mac_address.append(directorio)
             cur_path = settings.BASE_DIR
             ruta_json = str(Path(cur_path, '../', 'allora_code/'))
+            
             ruta_json = ruta_json+'/'+(str(directorio))
-            ruta_json = ruta_json+'/data.json'
-            file = open(ruta_json)
-            data = json.load(file)
-            data_all.append(data)
+            archivos = os.listdir(ruta_json)
+            archivos = [archivo for archivo in archivos if os.path.isfile(os.path.join(ruta_json, archivo))]
+            for archivo in archivos:
+                
+                file = open(ruta_json+'/'+archivo)
+                data = json.load(file)
+                data_all.append(data)
         context = {
             "mac_address": mac_address,
             "data": data_all,
