@@ -1,0 +1,29 @@
+version: '3'
+services:
+  servicio1:
+    container_name: api_allora
+    build: 
+      context: apiallora
+      dockerfile: Dockerfile.apiallora
+    ports:
+      - 8004:8004
+    networks:
+      - mi_red
+
+  servicio2:
+    container_name: allora_page
+    build:
+      context: allora_page
+      dockerfile: Dockerfile.page
+    environment:
+      - PORT_API=8004
+      - URL=http://servicio1:8004
+    ports:
+      - 8005:8005
+    networks:
+      - mi_red
+
+networks:
+  mi_red:
+    external: true
+
