@@ -1,0 +1,16 @@
+FROM python:3.8
+
+WORKDIR /app
+
+COPY requirements.txt .
+COPY . .
+
+RUN pip install -r requirements.txt
+
+EXPOSE 8004
+
+ENV PYTHONPATH "${PYTHONPATH}:./AlLoRa"
+
+WORKDIR /app/AlLoRaAPI
+
+CMD ["python", "manage.py", "runserver", "0.0.0.0:8004"]

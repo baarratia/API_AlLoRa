@@ -1,7 +1,8 @@
 # Main for Gateway Side AlLoRa
 # HW: Raspberry Pi + TTGO Adapter
 
-import  sys, gc
+import  sys
+
 from AlLoRa.Nodes.Gateway import Gateway
 from AlLoRa.Connectors.Serial_connector import Serial_connector
 
