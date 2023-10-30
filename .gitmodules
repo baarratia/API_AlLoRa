@@ -1,0 +1,4 @@
+[submodule "AlLoRa"]
+	path = AlLoRa
+	url = https://github.com/SMARTLAGOON/AlLoRa.git
+	branch = Serial_Sender
