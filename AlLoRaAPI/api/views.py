@@ -32,7 +32,7 @@ class restartGateway(APIView):
         except Exception as ex:
             print(f"Otro error inesperado: {ex}")
         
-        working_directory = '../allora_code/'
+        working_directory = '../'
 
         command = 'python3 main.py'  
 
@@ -48,7 +48,7 @@ class restartGateway(APIView):
 class activateGateway(APIView):
     def get(self, request):
 
-        working_directory = '../allora_code/'
+        working_directory = '../'
 
         command = 'python3 main.py'  
 
@@ -93,7 +93,7 @@ class getGateway(APIView):
     def get(self, request):
         cur_path = settings.BASE_DIR
         path = str(Path(cur_path, '../'))
-        filepath = str(Path(cur_path, '../', 'allora_code/LoRa.json'))
+        filepath = str(Path(cur_path, '../', 'LoRa.json'))
         f = open(filepath)
         data = json.load(f)
         f.close()
@@ -105,7 +105,7 @@ class getGateway(APIView):
 class getNodes(APIView):
     def get(self, request):
         cur_path = settings.BASE_DIR
-        filepath = str(Path(cur_path, '../', 'allora_code/Nodes.json'))
+        filepath = str(Path(cur_path, '../', 'Nodes.json'))
         f = open(filepath)
         data = json.load(f)
         f.close()
@@ -116,7 +116,7 @@ class getNodes(APIView):
     
     def post(self, request):
         cur_path = settings.BASE_DIR
-        filepath = str(Path(cur_path, '../', 'allora_code/Nodes.json'))
+        filepath = str(Path(cur_path, '../', 'Nodes.json'))
         f = open(filepath)
         data = json.load(f)
         for d in data:
@@ -132,7 +132,7 @@ class setActiveNode(APIView):
     def post(self, request):
         nodo = request.POST.get('nodo')
         cur_path = settings.BASE_DIR
-        filepath = str(Path(cur_path, '../', 'allora_code/Nodes.json'))
+        filepath = str(Path(cur_path, '../', 'Nodes.json'))
         f = open(filepath)
         data = json.load(f)
         for d in data:
@@ -153,7 +153,7 @@ class setMeshNode(APIView):
     def post(self, request):
         nodo = request.POST.get('nodo')
         cur_path = settings.BASE_DIR
-        filepath = str(Path(cur_path, '../', 'allora_code/Nodes.json'))
+        filepath = str(Path(cur_path, '../', 'Nodes.json'))
         f = open(filepath)
         data = json.load(f)
         for d in data:
@@ -173,7 +173,7 @@ class deleteNode(APIView):
     def post(self, request):
         nodo = request.POST.get('nodo')
         cur_path = settings.BASE_DIR
-        filepath = str(Path(cur_path, '../', 'allora_code/Nodes.json'))
+        filepath = str(Path(cur_path, '../', 'Nodes.json'))
         f = open(filepath)
         data = json.load(f)
         for d in data:
@@ -194,7 +194,7 @@ class updateNode(APIView):
         nodo = dict(request.data)
 
         cur_path = settings.BASE_DIR
-        filepath = str(Path(cur_path, '../', 'allora_code/Nodes.json'))
+        filepath = str(Path(cur_path, '../', 'Nodes.json'))
         f = open(filepath)
         data = json.load(f)
 
@@ -218,7 +218,7 @@ class addNode(APIView):
     def post(self, request):
         nodo = dict(request.data)
         cur_path = settings.BASE_DIR
-        filepath = str(Path(cur_path, '../', 'allora_code/Nodes.json'))
+        filepath = str(Path(cur_path, '../', 'Nodes.json'))
         f = open(filepath)
         data = json.load(f)
 
@@ -246,7 +246,7 @@ class addNode(APIView):
 class getNode(APIView):
     def get(self, request):
         cur_path = settings.BASE_DIR
-        filepath = str(Path(cur_path, '../', 'allora_code/Nodes.json'))
+        filepath = str(Path(cur_path, '../', 'Nodes.json'))
         f = open(filepath)
         data = json.load(f)
         mac_address = request.POST.get('mac_address')
@@ -259,7 +259,7 @@ class getData(APIView):
     def get(self, request):
         
         cur_path = settings.BASE_DIR
-        ruta_carpeta = str(Path(cur_path, '../', 'allora_code/'))
+        ruta_carpeta = str(Path(cur_path, '../'))
         # Especifica la ruta de la carpeta que quieres explorar
 
         # Obtiene la lista de directorios dentro de la carpeta
@@ -279,7 +279,7 @@ class downloadData(APIView):
         # Nombre del archivo ZIP
         nombre_zip = 'carpeta_descargada.zip'
         cur_path = settings.BASE_DIR
-        ruta_carpeta = str(Path(cur_path, '../', 'allora_code/9a76ba3f'))
+        ruta_carpeta = str(Path(cur_path, '../', '9a76ba3f'))
 
         ruta_zip = os.path.join(settings.MEDIA_ROOT, nombre_zip)
 
@@ -294,7 +294,7 @@ class downloadDataNode(APIView):
     def get(self, request):
         node = request.POST.get('node')
         cur_path = settings.BASE_DIR
-        ruta_json = str(Path(cur_path, '../', 'allora_code/'))
+        ruta_json = str(Path(cur_path, '../', ''))
         ruta_json = ruta_json+'/'+(str(node))
         ruta_json = ruta_json+'/data.json'
         file = open(ruta_json)
@@ -305,7 +305,7 @@ class downloadDataNode(APIView):
 class downloadAll(APIView):
     def get(self, request):
         cur_path = settings.BASE_DIR
-        ruta_carpeta = str(Path(cur_path, '../', 'allora_code/'))
+        ruta_carpeta = str(Path(cur_path, '../'))
         # Especifica la ruta de la carpeta que quieres explorar
 
         # Obtiene la lista de directorios dentro de la carpeta
@@ -316,7 +316,7 @@ class downloadAll(APIView):
         for directorio in directorios:
             mac_address.append(directorio)
             cur_path = settings.BASE_DIR
-            ruta_json = str(Path(cur_path, '../', 'allora_code/'))
+            ruta_json = str(Path(cur_path, '../'))
             
             ruta_json = ruta_json+'/'+(str(directorio))
             archivos = os.listdir(ruta_json)
@@ -337,7 +337,7 @@ class writeInfluxdb(APIView):
         
         text = ""
         cur_path = settings.BASE_DIR
-        ruta_carpeta = str(Path(cur_path, '../', 'allora_code/'))
+        ruta_carpeta = str(Path(cur_path, '../'))
 
         # Obtiene la lista de directorios dentro de la carpeta
         directorios = next(os.walk(ruta_carpeta))[1]
@@ -349,7 +349,7 @@ class writeInfluxdb(APIView):
 
         for mac in mac_address:
             cur_path = settings.BASE_DIR
-            ruta_json = str(Path(cur_path, '../', 'allora_code/'))
+            ruta_json = str(Path(cur_path, '../'))
             ruta_json = ruta_json+'/'+(str(mac))
             archivos = next(os.walk(ruta_json))[2]
             dict[mac] = archivos
@@ -365,7 +365,7 @@ class writeInfluxdb(APIView):
                     text = text + "sentiments,"
                     text = text + "mac_address=" + mac + " "
                     cur_path = settings.BASE_DIR
-                    ruta_json = str(Path(cur_path, '../', 'allora_code/'))
+                    ruta_json = str(Path(cur_path, '../'))
                     ruta_json = ruta_json+'/'+(str(mac))
                     ruta_json = ruta_json+'/'+(str(archivo))
                     file = open(ruta_json)
