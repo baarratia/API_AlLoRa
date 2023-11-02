@@ -9,7 +9,6 @@
     "sf": 7,
     "min_timeout": 0.5,
     "max_timeout": 12,
-    "result_path": "allora_files",
     "serial_port": "/dev/ttyAMA3",
     "baud": 9600,
     "timeout": 1}
