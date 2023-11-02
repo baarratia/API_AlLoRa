@@ -3,7 +3,7 @@
     "debug": true,
     "mesh_mode": false,
     "chunk_size": 235,
-    "result_path": "allora_files",
+    "result_path": "/allora_files",
     "connector":{
     "freq": 868,
     "sf": 7,
