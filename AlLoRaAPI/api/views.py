@@ -24,25 +24,29 @@ class restartGateway(APIView):
 
         with open("process.json") as file:
             data = json.load(file)
-        try:
-            kill(data["pid"], signal.SIGKILL)
-            data["pid"] = 0
-        except ProcessLookupError as ex:
-            print(f"Error al matar el proceso: {ex}")
-        except Exception as ex:
-            print(f"Otro error inesperado: {ex}")
+        if data["pid"] != 0:
+            try:
+                kill(data["pid"], signal.SIGKILL)
+                data["pid"] = 0
+            except ProcessLookupError as ex:
+                print(f"Error al matar el proceso: {ex}")
+            except Exception as ex:
+                print(f"Otro error inesperado: {ex}")
         
         working_directory = '../'
 
         command = 'python3 main.py'  
 
-        new_program = subprocess.Popen(command, shell=True, cwd=working_directory)
-        data["pid"] = new_program.pid
-        data["state"] = True
+        program = subprocess.Popen(command, shell=True, cwd=working_directory)
+
+        with open("process.json") as file:
+            data = json.load(file)
+            data["pid"] = program.pid
+            data["state"] = True
         with open("process.json", "w") as file:
             json.dump(data, file)
 
-        return JsonResponse({'message': 'Gateway reiniciado.'})
+        return JsonResponse({'state': True})
     
 
 class activateGateway(APIView):
@@ -92,7 +96,6 @@ class getStateGateway(APIView):
 class getGateway(APIView):
     def get(self, request):
         cur_path = settings.BASE_DIR
-        path = str(Path(cur_path, '../'))
         filepath = str(Path(cur_path, '../', 'LoRa.json'))
         f = open(filepath)
         data = json.load(f)
@@ -254,6 +257,39 @@ class getNode(APIView):
             if d['mac_address'] == mac_address:
                 return JsonResponse({"node": d})
         return JsonResponse({"node": False})
+    
+class setSerialPort(APIView):
+    def post(self, request):
+        serial_port = request.POST.get('serial_port')
+        cur_path = settings.BASE_DIR
+        filepath = str(Path(cur_path, '../', 'LoRa.json'))
+        f = open(filepath)
+        data = json.load(f)
+        data['serial_port'] = serial_port
+        with open(filepath, 'w') as file:
+            json.dump(data, file, indent=4)
+        f.close()
+        data = {
+            "gateway": data
+        }
+        return JsonResponse(data)
+
+class setResultPath(APIView):
+    def post(self, request):
+        result_path = request.POST.get('result_path')
+        cur_path = settings.BASE_DIR
+        filepath = str(Path(cur_path, '../', 'LoRa.json'))
+        f = open(filepath)
+        data = json.load(f)
+        data['results_path'] = result_path
+        with open(filepath, 'w') as file:
+            json.dump(data, file, indent=4)
+        f.close()
+        data = {
+            "gateway": data
+        }
+        return JsonResponse(data)
+
     
 class getData(APIView):
     def get(self, request):

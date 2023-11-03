@@ -21,5 +21,7 @@ urlpatterns = [
     path("downloadDataNode/", views.downloadDataNode.as_view(), name="downloadDataNode"),
     path("downloadAll/", views.downloadAll.as_view(), name="downloadAll"),
     path("writeInfluxdb/", views.writeInfluxdb.as_view(), name="writeInfluxdb"),
-    path("getDataInfluxDB/", views.getDataInfluxDB.as_view(), name="getDataInfluxDB")
+    path("getDataInfluxDB/", views.getDataInfluxDB.as_view(), name="getDataInfluxDB"),
+    path("setSerialPort/", views.setSerialPort.as_view(), name="setSerialPort"),
+    path("setResultPath/", views.setResultPath.as_view(), name="setResultPath")
 ]
