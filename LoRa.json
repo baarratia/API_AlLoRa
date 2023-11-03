@@ -12,7 +12,5 @@
         "serial_port": "/dev/ttyAMA3",
         "baud": 9600,
         "timeout": 1
-    },
-    "serial_port": "/dev/ttyAMA3",
-    "results_path": "/allora_files"
+    }
 }
