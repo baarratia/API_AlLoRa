@@ -1,3 +1,4 @@
+import os
 from os import kill
 import signal
 from django.http import HttpResponse
@@ -9,82 +10,143 @@ from rest_framework.response import Response
 import json
 from django.conf import settings
 from pathlib import Path
-import os
 import shutil
 from django.http import HttpResponse
 from django.conf import settings
 import requests
 from datetime import datetime
 
+import logging
+import psutil  
+
+logger = logging.getLogger(__name__)
+
+
 def index(request):
     return HttpResponse("Hello, world. You're at the polls index.")
 
-class restartGateway(APIView):
-    def get(self, request):
+def process_file_path():
+    return os.path.join(os.path.dirname(__file__), 'process.json') 
 
-        with open("process.json") as file:
-            data = json.load(file)
-        if data["pid"] != 0:
-            try:
-                kill(data["pid"], signal.SIGKILL)
-                data["pid"] = 0
-            except ProcessLookupError as ex:
-                print(f"Error al matar el proceso: {ex}")
-            except Exception as ex:
-                print(f"Otro error inesperado: {ex}")
-        
-        working_directory = '../'
+def read_process_info():
+    try:
+        with open(process_file_path()) as file:
+            return json.load(file)
+    except FileNotFoundError:
+        return {"pid": 0, "state": False}
+    except json.JSONDecodeError:
+        logger.error("Invalid JSON format in process.json.")
+        return {"pid": 0, "state": False}
 
-        command = 'python3 main.py'  
+def write_process_info(data):
+    with open(process_file_path(), "w") as file:
+        json.dump(data, file)
 
-        program = subprocess.Popen(command, shell=True, cwd=working_directory)
+def killGateway():
+    data = read_process_info()
+    if data["pid"] != 0 and psutil.pid_exists(data["pid"]):
+        try:
+            kill(data["pid"], signal.SIGKILL)
+            logger.info(f"Process {data['pid']} killed.")
+        except ProcessLookupError as ex:
+            logger.error(f"Error killing process: {ex}")
+        except Exception as ex:
+            logger.error(f"Unexpected error: {ex}")
+    data["pid"] = 0
+    data["state"] = False
+    write_process_info(data)
 
-        with open("process.json") as file:
-            data = json.load(file)
+def startGateway():
+    data = read_process_info()
+    if data["pid"] == 0 or not psutil.pid_exists(data["pid"]):
+        working_directory = '../'  # Adjust as needed
+        command = ['python3', 'main.py']  
+        try:
+            program = subprocess.Popen(command, cwd=working_directory)
             data["pid"] = program.pid
             data["state"] = True
-        with open("process.json", "w") as file:
-            json.dump(data, file)
+            write_process_info(data)
+            logger.info(f"Started main.py with PID {program.pid}.")
+        except Exception as ex:
+            logger.error(f"Failed to start main.py: {ex}")
 
+class restartGateway(APIView):
+    def get(self, request):
+        killGateway()
+        startGateway()
+        
         return JsonResponse({'state': True})
+
+        # with open("process.json") as file:
+        #     data = json.load(file)
+        # if data["pid"] != 0:
+        #     try:
+        #         kill(data["pid"], signal.SIGKILL)
+        #         data["pid"] = 0
+        #     except ProcessLookupError as ex:
+        #         print(f"Error al matar el proceso: {ex}")
+        #     except Exception as ex:
+        #         print(f"Otro error inesperado: {ex}")
+        
+        # working_directory = '../'
+
+        # command = 'python3 main.py'  
+
+        # program = subprocess.Popen(command, shell=True, cwd=working_directory)
+
+        # with open("process.json") as file:
+        #     data = json.load(file)
+        #     data["pid"] = program.pid
+        #     data["state"] = True
+        # with open("process.json", "w") as file:
+        #     json.dump(data, file)
+
+        # return JsonResponse({'state': True})
     
 
 class activateGateway(APIView):
     def get(self, request):
-
-        working_directory = '../'
-
-        command = 'python3 main.py'  
-
-        program = subprocess.Popen(command, shell=True, cwd=working_directory)
-
-        with open("process.json") as file:
-            data = json.load(file)
-            data["pid"] = program.pid
-            data["state"] = True
-        with open("process.json", "w") as file:
-            json.dump(data, file)
+        startGateway()
 
         return JsonResponse({'state': True})
+
+
+        # working_directory = '../'
+
+        # command = 'python3 main.py'  
+
+        # program = subprocess.Popen(command, shell=True, cwd=working_directory)
+
+        # with open("process.json") as file:
+        #     data = json.load(file)
+        #     data["pid"] = program.pid
+        #     data["state"] = True
+        # with open("process.json", "w") as file:
+        #     json.dump(data, file)
+
+        # return JsonResponse({'state': True})
     
 class deactivateGateway(APIView):
     def get(self, request):
-
-        with open("process.json") as file:
-            data = json.load(file)
-        try:
-            kill(data["pid"], signal.SIGKILL)
-            data["pid"] = 0
-        except ProcessLookupError as ex:
-            print(f"Error al matar el proceso: {ex}")
-        except Exception as ex:
-            print(f"Otro error inesperado: {ex}")
-        data["pid"] = 0
-        data["state"] = False
-        with open("process.json", "w") as file:
-            json.dump(data, file)
+        killGateway()
 
         return JsonResponse({'state': False})
+
+        # with open("process.json") as file:
+        #     data = json.load(file)
+        # try:
+        #     kill(data["pid"], signal.SIGKILL)
+        #     data["pid"] = 0
+        # except ProcessLookupError as ex:
+        #     print(f"Error al matar el proceso: {ex}")
+        # except Exception as ex:
+        #     print(f"Otro error inesperado: {ex}")
+        # data["pid"] = 0
+        # data["state"] = False
+        # with open("process.json", "w") as file:
+        #     json.dump(data, file)
+
+        # return JsonResponse({'state': False})
     
 class getStateGateway(APIView):
     def get(self, request):
